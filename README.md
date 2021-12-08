@@ -8,34 +8,36 @@ This doesn't undermine any of the Gherkin spec, nor the way in which Specflow im
 This project explores such an approach. For now this project is purely experimental and has received no approval nor any affiliation with [Specflow](https://specflow.org/) or [Cucumber/Gherkin](https://cucumber.io/).
 
 ### Example
-Imagine you specify the following scenarios
+Imagine you specify [the following scenarios](Specflow.BackgroundOnce.Nunit/Features/Readme.feature)
 
 ```gherkin
 Background:
-  Given the database engine is started
-  And standard reference data is created
+    Given the database engine is started
+    And standard reference data is created
 
 Scenario: Employee details can be retrieved with reference data
-  When I request the details of Joe Blogs
-  Then I receive the following details
-    | Name       | Joe Blogs                                |
-    | Gender     | Male                                     |
-    | Department | Human Resources                          |
-    | Address    | Dorothy House, Yellow Brick Road, Kansas |
+    When I request the details of Joe Blogs
+    Then I receive the following details
+      | Property   | Value                                    |
+      | Name       | Joe Blogs                                |
+      | Gender     | Male                                     |
+      | Department | Human Resources                          |
+      | Address    | Dorothy House, Yellow Brick Road, Kansas |
 
 Scenario: Reference data can be updated for all employees
-  Given I update the address labeled Head Quarters to
-    | House  | 27             |
-    | Street | Wimpole Street |
-    | County | London         |
- 
-  When I request the details of Joe Blogs
-  Then I receive the following details
-    | Name       | Joe Blogs                  |
-    | Gender     | Male                       |
-    | Department | Human Resources            |
-    | Address    | 27, Wimpole Street, London |
+    Given I update the address labeled Head Quarters to
+      | Property | Value          |
+      | House    | 27             |
+      | Street   | Wimpole Street |
+      | County   | London         |
 
+    When I request the details of Joe Blogs
+    Then I receive the following details
+      | Property   | Value                      |
+      | Name       | Joe Blogs                  |
+      | Gender     | Male                       |
+      | Department | Human Resources            |
+      | Address    | 27, Wimpole Street, London |
 ```
 
 There is nothing to say that the steps in the background couldn't be executed once, so long as the state is consistent before the steps in the scenario continue
@@ -96,7 +98,7 @@ public class DataContext : ISnapshotData
 }
 ```
 There can be any number of these 'context' objects, any which are created within the invoked scenario will have their methods invoked at the appropriate times.
-See the sample projects in this repository for some examples of how this can be implemented.
+See [the sample projects in this repository](Specflow.BackgroundOnce.UnitTestCommon/Context/DataContext.cs) for some examples of how this can be implemented.
 
 #### Notes on the implementation:
 - **Don't use static objects/fields** not only are they not thread safe but they circumvent dependency injection and encapsulation of snapshots within features
