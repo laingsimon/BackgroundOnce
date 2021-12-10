@@ -2,11 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Specflow.BackgroundOnce.UnitTestCommon.Data;
+using Specflow.BackgroundOnce.UnitTestCommon.Repository;
+using TechTalk.SpecFlow;
 
 namespace Specflow.BackgroundOnce.UnitTestCommon
 {
-    public class InMemoryDatabase
+    public class InMemoryDatabase : IDatabase
     {
+        private const string SnapshotKey = nameof(SnapshotKey);
+
         private readonly IDictionary<Type, IInMemoryTable> _data;
         private readonly bool _readOnly;
 
@@ -21,7 +28,15 @@ namespace Specflow.BackgroundOnce.UnitTestCommon
             _readOnly = readOnly;
         }
 
-        public InMemoryTable<T> GetTable<T>()
+        public ICollection<Person> People => Get<Person>();
+        public ICollection<Address> Addresses => Get<Address>();
+        public ICollection<Department> Departments => Get<Department>();
+        public Task SaveChangesAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public ICollection<T> Get<T>() where T : class
         {
             if (!_data.ContainsKey(typeof(T)))
             {
@@ -34,6 +49,36 @@ namespace Specflow.BackgroundOnce.UnitTestCommon
             }
 
             return (InMemoryTable<T>)_data[typeof(T)];
+        }
+
+        public Task Remove<T>(Expression<Func<T, bool>> predicate) where T : class
+        {
+            var table = (InMemoryTable<T>)Get<T>();
+            table.RemoveRecords(predicate.Compile());
+            return Task.CompletedTask;
+        }
+
+        public Task CreateSnapshot(FeatureContext featureContext)
+        {
+            var snapshot = CloneAsReadOnly();
+            featureContext[SnapshotKey] = snapshot;
+            return Task.CompletedTask;
+        }
+
+        public Task RestoreSnapshot(FeatureContext featureContext)
+        {
+            if (!featureContext.TryGetValue<InMemoryDatabase>(SnapshotKey, out var snapshot))
+            {
+                throw new InvalidOperationException("No snapshots available");
+            }
+
+            ResetDataTo(snapshot);
+            return Task.CompletedTask;
+        }
+
+        public bool SnapshotExists(FeatureContext featureContext)
+        {
+            return featureContext.ContainsKey(SnapshotKey);
         }
 
         public override string ToString()
@@ -76,10 +121,9 @@ namespace Specflow.BackgroundOnce.UnitTestCommon
             IInMemoryTable CloneAsWritable();
         }
 
-        public class InMemoryTable<T> : IInMemoryTable, IEnumerable<T>
+        public class InMemoryTable<T> : IInMemoryTable, ICollection<T>
         {
             private readonly List<T> _records;
-            private readonly bool _readOnly;
 
             public InMemoryTable()
                 :this(new List<T>())
@@ -89,32 +133,65 @@ namespace Specflow.BackgroundOnce.UnitTestCommon
             private InMemoryTable(List<T> records, bool readOnly = false)
             {
                 _records = records;
-                _readOnly = readOnly;
+                IsReadOnly = readOnly;
             }
 
-            public void AddRecords(IEnumerable<T> toAdd)
+            public int Count => _records.Count;
+            public bool IsReadOnly { get; }
+
+            public void Add(T item)
             {
-                if (_readOnly)
+                if (IsReadOnly)
                 {
-                    throw new InvalidOperationException("Unable to add records to a readonly table");
+                    throw new InvalidOperationException("Unable to add record to a readonly table");
                 }
 
-                _records.AddRange(toAdd);
+                _records.Add(item);
             }
 
-            public void RemoveRecords(Predicate<T> toRemove)
+            public void Clear()
             {
-                if (_readOnly)
+                if (IsReadOnly)
+                {
+                    throw new InvalidOperationException("Unable to clear a readonly table");
+                }
+
+                _records.Clear();
+            }
+
+            public bool Contains(T item)
+            {
+                return _records.Contains(item);
+            }
+
+            public void CopyTo(T[] array, int arrayIndex)
+            {
+                _records.CopyTo(array, arrayIndex);
+            }
+
+            public bool Remove(T item)
+            {
+                if (IsReadOnly)
+                {
+                    throw new InvalidOperationException("Unable to remove record from a readonly table");
+                }
+
+                return _records.Remove(item);
+            }
+
+            public void RemoveRecords(Func<T, bool> toRemove)
+            {
+                if (IsReadOnly)
                 {
                     throw new InvalidOperationException("Unable to remove records from a readonly table");
                 }
 
-                _records.RemoveAll(toRemove);
+                _records.RemoveAll(r => toRemove(r));
             }
 
             public IInMemoryTable CloneAsReadOnly()
             {
-                if (_readOnly)
+                if (IsReadOnly)
                 {
                     return this;
                 }
@@ -134,7 +211,7 @@ namespace Specflow.BackgroundOnce.UnitTestCommon
 
             public override string ToString()
             {
-                var readOnlySuffix = _readOnly
+                var readOnlySuffix = IsReadOnly
                     ? " (readonly)"
                     : "";
 

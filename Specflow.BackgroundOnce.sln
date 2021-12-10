@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specflow.BackgroundOnce.XUn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specflow.BackgroundOnce.MsTest", "Specflow.BackgroundOnce.MsTest\Specflow.BackgroundOnce.MsTest.csproj", "{17663DF9-0072-45B9-8ABD-2A15255A5DB0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specflow.BackgroundOnce.EFCore", "Specflow.BackgroundOnce.EFCore\Specflow.BackgroundOnce.EFCore.csproj", "{1FEF8D54-0D46-43E3-BCAE-DAA65494E67B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{17663DF9-0072-45B9-8ABD-2A15255A5DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17663DF9-0072-45B9-8ABD-2A15255A5DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17663DF9-0072-45B9-8ABD-2A15255A5DB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FEF8D54-0D46-43E3-BCAE-DAA65494E67B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FEF8D54-0D46-43E3-BCAE-DAA65494E67B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FEF8D54-0D46-43E3-BCAE-DAA65494E67B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FEF8D54-0D46-43E3-BCAE-DAA65494E67B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <AssemblyName>Specflow.BackgroundOnce.EFCore.SpecflowPlugin</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,8 +12,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Specflow.BackgroundOnce.EFCore\Specflow.BackgroundOnce.EFCore.csproj" />
       <ProjectReference Include="..\Specflow.BackgroundOnce\Specflow.BackgroundOnce.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Features\InMemory.feature" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckBuild Remove="Features\InMemory.feature.cs" />
     </ItemGroup>
 
 </Project>

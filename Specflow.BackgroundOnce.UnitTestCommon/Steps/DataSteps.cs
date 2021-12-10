@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Specflow.BackgroundOnce.UnitTestCommon.Context;
 using Specflow.BackgroundOnce.UnitTestCommon.Data;
+using Specflow.BackgroundOnce.UnitTestCommon.Repository;
 using TechTalk.SpecFlow;
 using TechTalk.SpecFlow.Assist;
 
@@ -11,72 +14,98 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
     public abstract class DataSteps
     {
         private readonly RequestContext _requestContext;
-        private readonly InMemoryDatabase _database;
+        private readonly DataRepositoryFactory _dataRepositoryFactory;
+        private readonly DataContext _dataContext;
 
         public DataSteps(
             DataContext dataContext,
-            RequestContext requestContext)
+            RequestContext requestContext,
+            DataRepositoryFactory dataRepositoryFactory)
         {
             _requestContext = requestContext;
-            _database = dataContext.Database;
+            _dataRepositoryFactory = dataRepositoryFactory;
+            _dataContext = dataContext;
+        }
+
+        [Given("I am using the (.+) database")]
+        public void IAmUsingTheDatabaseType(DatabaseType databaseType)
+        {
+            _dataContext.DatabaseType = databaseType;
         }
 
         [Given("there are the following people")]
-        public void GivenTheTableHasTheFollowingPeople(Table data)
+        public async Task GivenTheTableHasTheFollowingPeople(Table data)
         {
-            var people = data.CreateSet<Person>();
-            _database.GetTable<Person>().AddRecords(people);
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            await repository.AddData(new ReferenceData
+            {
+                People = data.CreateSet<Person>().ToArray(),
+            });
         }
 
         [Given("there are the following addresses")]
-        public void GivenTheTableHasTheFollowingAddresses(Table data)
+        public async Task GivenTheTableHasTheFollowingAddresses(Table data)
         {
-            var addresses = data.CreateSet<Address>();
-            _database.GetTable<Address>().AddRecords(addresses);
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            await repository.AddData(new ReferenceData
+            {
+                Addresses = data.CreateSet<Address>().ToArray(),
+            });
         }
 
         [Then(@"there are (\d+) people")]
         [Given(@"there are (\d+) people")]
         public void VerifyPeopleCount(int count)
         {
-            Assert.AreEqual(count, _database.GetTable<Person>().Count());
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            var actualCount = repository.GetCount<Person>();
+
+            Assert.AreEqual(count, actualCount);
         }
 
         [Then(@"there are (\d+) addresses")]
         [Given(@"there are (\d+) addresses")]
         public void VerifyAddressCount(int count)
         {
-            Assert.AreEqual(count, _database.GetTable<Address>().Count());
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            var actualCount = repository.GetCount<Address>();
+
+            Assert.AreEqual(count, actualCount);
         }
 
         [Given(@"There are no people under the age of (\d+)")]
-        public void GivenThereAreNoPeopleUnderTheAgeOf(int age)
+        public async Task GivenThereAreNoPeopleUnderTheAgeOf(int age)
         {
-            _database.GetTable<Person>().RemoveRecords(p => p.Age < age);
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            await repository.Remove<Person>(p => p.Age < age);
         }
 
         [Given(@"There are no people over the age of (\d+)")]
-        public void GivenThereAreNoPeopleOverTheAgeOf(int age)
+        public async Task GivenThereAreNoPeopleOverTheAgeOf(int age)
         {
-            _database.GetTable<Person>().RemoveRecords(p => p.Age > age);
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            await repository.Remove<Person>(p => p.Age > age);
         }
 
         [Given(@"There are only addresses in (.+)")]
-        public void GivenThereAreOnlyAddressesFromCounty(string county)
+        public async Task GivenThereAreOnlyAddressesFromCounty(string county)
         {
-            _database.GetTable<Address>().RemoveRecords(a => a.County != county);
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            await repository.Remove<Address>(a => a.County != county);
         }
 
         [When("I request all people")]
         public void WhenIRequestAllPeople()
         {
-            _requestContext.RetrievedPeople = _database.GetTable<Person>().ToArray();
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            _requestContext.RetrievedPeople = repository.Get<Person>().ToArray();
         }
 
         [When("I request all addresses")]
         public void WhenIRequestAllAddresses()
         {
-            _requestContext.RetrievedAddresses = _database.GetTable<Address>().ToArray();
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            _requestContext.RetrievedAddresses = repository.Get<Address>().ToArray();
         }
 
         [Then("I receive the following people")]
@@ -85,7 +114,6 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
             var expectedPeople = table.CreateSet<Person>();
             var expectedNames = expectedPeople.Select(p => p.Name).ToArray();
             var actualNames = _requestContext.RetrievedPeople.Select(p => p.Name).ToArray();
-
             Assert.AreEquivalentTo(expectedNames, actualNames);
         }
 
@@ -115,47 +143,29 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
         public void StandardReferenceDataIsCreated()
         {
             // create some data in the 'database' that is standard
-            AddPeople();
-            AddDepartments();
-            AddAddresses();
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            repository.AddData(new ReferenceData
+            {
+                Addresses = AddAddresses().ToArray(),
+                People = AddPeople().ToArray(),
+                Departments = AddDepartments().ToArray(),
+            });
         }
 
         [When("I request the details of (.+)")]
-        public void IRequestTheDetailsOfPerson(string name)
+        public async Task IRequestTheDetailsOfPerson(string name)
         {
-            var people = _database.GetTable<Person>();
-            var departments = _database.GetTable<Department>();
-            var addresses = _database.GetTable<Address>();
-
-            var details = (from person in people
-                where person.Name == name
-                join department in departments on person.DepartmentCode equals department.DepartmentCode
-                join address in addresses on department.AddressCode equals address.AddressCode
-                select new PersonDetails
-                {
-                    Name = person.Name,
-                    Gender = person.Gender,
-                    Department = department.Name,
-                    Address = $"{address.House}, {address.Street}, {address.County}"
-                }).SingleOrDefault();
-
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
+            var details = await repository.GetPersonDetails(name);
             _requestContext.RetrievedPersonDetails = details;
         }
 
         [Given("I update the address labeled (.+) to")]
-        public void IUpdateTheAddress(string name, Table newDetails)
+        public async Task IUpdateTheAddress(string name, Table newDetails)
         {
+            var repository = _dataRepositoryFactory.GetRepository(_dataContext);
             var newAddress = newDetails.CreateInstance<Address>();
-            var currentAddress = _database.GetTable<Address>().SingleOrDefault(a => a.Name == name);
-
-            if (currentAddress == null)
-            {
-                throw new InvalidOperationException("Address not found");
-            }
-
-            currentAddress.County = newAddress.County;
-            currentAddress.House = newAddress.House;
-            currentAddress.Street = newAddress.Street;
+            await repository.UpdateAddress(name, newAddress);
         }
 
         [Then("I receive the following details")]
@@ -175,7 +185,7 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
             Assert.AreEqual(expected.Address, actual.Address);
         }
 
-        private void AddPeople()
+        private static IEnumerable<Person> AddPeople()
         {
             var person = new Person
             {
@@ -184,10 +194,10 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
                 DepartmentCode = "HR",
             };
 
-            _database.GetTable<Person>().AddRecords(new[] { person });
+            yield return person;
         }
 
-        private void AddDepartments()
+        private static IEnumerable<Department> AddDepartments()
         {
             var departments = new Department
             {
@@ -196,10 +206,10 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
                 AddressCode = "HeadQuarters",
             };
 
-            _database.GetTable<Department>().AddRecords(new[] { departments });
+            yield return departments;
         }
 
-        private void AddAddresses()
+        private static IEnumerable<Address> AddAddresses()
         {
             var address = new Address
             {
@@ -210,7 +220,7 @@ namespace Specflow.BackgroundOnce.UnitTestCommon.Steps
                 County = "Kansas",
             };
 
-            _database.GetTable<Address>().AddRecords(new[] { address });
+            yield return address;
         }
     }
 }

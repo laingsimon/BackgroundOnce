@@ -1,38 +1,30 @@
-using System;
 using System.Threading.Tasks;
+using Specflow.BackgroundOnce.UnitTestCommon.Repository;
 using TechTalk.SpecFlow;
 
 namespace Specflow.BackgroundOnce.UnitTestCommon.Context
 {
     public class DataContext : ISnapshotData
     {
-        private const string SnapshotKey = nameof(SnapshotKey);
-
         private readonly FeatureContext _featureContext;
+        private readonly DataRepositoryFactory _repositoryFactory;
 
-        public DataContext(FeatureContext featureContext)
+        public DataContext(FeatureContext featureContext, DataRepositoryFactory repositoryFactory)
         {
             _featureContext = featureContext;
+            _repositoryFactory = repositoryFactory;
         }
 
-        public InMemoryDatabase Database { get; } = new InMemoryDatabase();
+        public DatabaseType DatabaseType { get; set; }
 
-        public Task CreateSnapshot()
+        public async Task CreateSnapshot()
         {
-            var snapshot = Database.CloneAsReadOnly();
-            _featureContext[SnapshotKey] = snapshot;
-            return Task.CompletedTask;
+            await _repositoryFactory.GetRepository(this).CreateSnapshot(_featureContext);
         }
 
-        public Task RestoreSnapshot()
+        public async Task RestoreSnapshot()
         {
-            if (!_featureContext.TryGetValue<InMemoryDatabase>(SnapshotKey, out var snapshot))
-            {
-                throw new InvalidOperationException("No snapshots available");
-            }
-
-            Database.ResetDataTo(snapshot);
-            return Task.CompletedTask;
+            await _repositoryFactory.GetRepository(this).RestoreSnapshot(_featureContext);
         }
     }
 }
