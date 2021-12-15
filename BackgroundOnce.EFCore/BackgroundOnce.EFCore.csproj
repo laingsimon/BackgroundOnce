@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <AssemblyName>BackgroundOnce.EFCore.SpecFlowPlugin</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.12" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.12" />
+      <PackageReference Include="SpecFlow" Version="3.9.40" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BackgroundOnce\BackgroundOnce.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Features\InMemory.feature" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckBuild Remove="Features\InMemory.feature.cs" />
+    </ItemGroup>
+
+</Project>
