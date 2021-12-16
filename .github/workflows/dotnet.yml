@@ -12,6 +12,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      MAJOR_VERSION: 0
+      MINOR_VERSION: 0
+      PRE_RELEASE: '-cibuild'
+
     steps:
     - uses: actions/checkout@v2
     
@@ -22,7 +27,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore --configuration Release -p:Version=$GITHUB_RUN_NUMBER
+      run: dotnet build --no-restore --configuration Release "-p:Version=$MAJOR_VERSION.$MINOR_VERSION.$GITHUB_RUN_NUMBER$PRE_RELEASE"
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: 'Upload BackgroundOnce package'
