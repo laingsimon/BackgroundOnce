@@ -15,7 +15,7 @@ jobs:
     env:
       MAJOR_VERSION: 0
       MINOR_VERSION: 0
-      PRE_RELEASE: '-cibuild'
+      PRE_RELEASE_TAG: '-cibuild'
 
     steps:
     - uses: actions/checkout@v2
@@ -27,18 +27,18 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore --configuration Release "-p:Version=$MAJOR_VERSION.$MINOR_VERSION.$GITHUB_RUN_NUMBER$PRE_RELEASE"
+      run: dotnet build --no-restore --configuration Release "-p:Version=$MAJOR_VERSION.$MINOR_VERSION.$GITHUB_RUN_NUMBER$PRE_RELEASE_TAG"
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
     - name: 'Upload BackgroundOnce package'
       uses: actions/upload-artifact@v2
       with:
-        name: BackgroundOnce_package
+        name: "BackgroundOnce-${{env.MAJOR_VERSION}}.${{env.MINOR_VERSION}}.${{github.run_number}}${{env.PRE_RELEASE_TAG}}.nupkg"
         path: BackgroundOnce/bin/Release/BackgroundOnce*.nupkg
         retention-days: 5
     - name: 'Upload BackgroundOnce.EFCore package'
       uses: actions/upload-artifact@v2
       with:
-        name: BackgroundOnceEFCore_package
+        name: "BackgroundOnceEFCore-${{env.MAJOR_VERSION}}.${{env.MINOR_VERSION}}.${{github.run_number}}${{env.PRE_RELEASE_TAG}}.nupkg"
         path: BackgroundOnce.EFCore/bin/Release/BackgroundOnce.EFCore*.nupkg
         retention-days: 5
