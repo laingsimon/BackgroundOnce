@@ -25,3 +25,15 @@ jobs:
       run: dotnet build --no-restore --configuration Release -p:Version=$GITHUB_RUN_NUMBER
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
+    - name: 'Upload BackgroundOnce package'
+      uses: actions/upload-artifact@v2
+      with:
+        name: BackgroundOnce_package
+        path: BackgroundOnce/bin/Release/BackgroundOnce*.nupkg
+        retention-days: 5
+    - name: 'Upload BackgroundOnce.EFCore package'
+      uses: actions/upload-artifact@v2
+      with:
+        name: BackgroundOnceEFCore_package
+        path: BackgroundOnce.EFCore/bin/Release/BackgroundOnce.EFCore*.nupkg
+        retention-days: 5
