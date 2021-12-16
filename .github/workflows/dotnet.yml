@@ -15,10 +15,14 @@ jobs:
     env:
       MAJOR_VERSION: 0
       MINOR_VERSION: 0
-      PRE_RELEASE_TAG: '-cibuild'
+      PRE_RELEASE_TAG: ${{ format('-{0}', github.ref_name) }}
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Reset pre-release tag for main branch
+      if: ${{ github.ref_name == 'main' }}
+      run: echo "PRE_RELEASE_TAG=" >> $GITHUB_ENV
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
