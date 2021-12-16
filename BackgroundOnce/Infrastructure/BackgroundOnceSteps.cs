@@ -56,7 +56,10 @@ namespace BackgroundOnce.Infrastructure
             {
                 _scenarioExecutor.InvokeSubScenario(scenarioName);
 
-                await _snapshotManager.CreateSnapshots();
+                if (_scenarioContext.ScenarioExecutionStatus == ScenarioExecutionStatus.OK)
+                {
+                    await _snapshotManager.CreateSnapshots();
+                }
             }
             finally
             {

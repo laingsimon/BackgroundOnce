@@ -140,11 +140,11 @@ namespace BackgroundOnce.UnitTestCommon.Steps
         }
 
         [Given("standard reference data is created")]
-        public void StandardReferenceDataIsCreated()
+        public async Task StandardReferenceDataIsCreated()
         {
             // create some data in the 'database' that is standard
             var repository = _dataRepositoryFactory.GetRepository(_dataContext);
-            repository.AddData(new ReferenceData
+            await repository.AddData(new ReferenceData
             {
                 Addresses = AddAddresses().ToArray(),
                 People = AddPeople().ToArray(),
