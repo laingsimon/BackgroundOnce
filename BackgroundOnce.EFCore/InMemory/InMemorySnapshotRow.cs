@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace BackgroundOnce.EFCore
+namespace BackgroundOnce.EFCore.InMemory
 {
     public class InMemorySnapshotRow : IInMemorySnapshotRow
     {

@@ -14,9 +14,9 @@ namespace BackgroundOnce.UnitTestCommon.EfCore
     public class InMemoryDbContext : DbContext, Repository.IDatabase
     {
         private readonly InMemoryDatabaseRoot _root;
-        private readonly IInMemorySnapshotHelper _snapshotHelper;
+        private readonly ISnapshotHelper _snapshotHelper;
 
-        public InMemoryDbContext(InMemoryDatabaseRoot root, IInMemorySnapshotHelper snapshotHelper)
+        public InMemoryDbContext(InMemoryDatabaseRoot root, ISnapshotHelper snapshotHelper)
         {
             _root = root;
             _snapshotHelper = snapshotHelper;
@@ -40,11 +40,6 @@ namespace BackgroundOnce.UnitTestCommon.EfCore
             modelBuilder.Entity<Department>().HasKey(x => new { x.DepartmentCode });
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await base.SaveChangesAsync();
-        }
-
         public ICollection<T> Get<T>()
             where T : class
         {
@@ -62,27 +57,12 @@ namespace BackgroundOnce.UnitTestCommon.EfCore
 
         public async Task CreateSnapshot(FeatureContext featureContext)
         {
-            if (_snapshotHelper.SnapshotExists(this, featureContext))
-            {
-                throw new InvalidOperationException("Snapshot has already been created, it might be intentional to replace the snapshot, but it's not expected");
-            }
-
             await _snapshotHelper.CreateSnapshot(this, featureContext);
         }
 
         public async Task RestoreSnapshot(FeatureContext featureContext)
         {
-            if (!_snapshotHelper.SnapshotExists(this, featureContext))
-            {
-                throw new InvalidOperationException("Snapshot hasn't been created, yet");
-            }
-
             await _snapshotHelper.RestoreSnapshot(this, featureContext);
-        }
-
-        public bool SnapshotExists(FeatureContext featureContext)
-        {
-            return _snapshotHelper.SnapshotExists(this, featureContext);
         }
     }
 }

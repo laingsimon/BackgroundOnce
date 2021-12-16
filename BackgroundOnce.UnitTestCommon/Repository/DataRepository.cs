@@ -97,23 +97,5 @@ namespace BackgroundOnce.UnitTestCommon.Repository
             var database = _getDatabase();
             return database.Get<T>();
         }
-
-        public async Task CreateSnapshot(FeatureContext featureContext)
-        {
-            var database = _getDatabase();
-            await database.CreateSnapshot(featureContext);
-        }
-
-        public async Task RestoreSnapshot(FeatureContext featureContext)
-        {
-            var database = _getDatabase();
-            await database.RestoreSnapshot(featureContext);
-        }
-
-        public bool SnapshotExists(FeatureContext featureContext)
-        {
-            var database = _getDatabase();
-            return database.SnapshotExists(featureContext);
-        }
     }
 }

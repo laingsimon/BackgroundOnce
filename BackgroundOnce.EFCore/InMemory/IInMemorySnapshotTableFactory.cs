@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.InMemory.Storage.Internal;
 
-namespace BackgroundOnce.EFCore
+namespace BackgroundOnce.EFCore.InMemory
 {
     public interface IInMemorySnapshotTableFactory
     {

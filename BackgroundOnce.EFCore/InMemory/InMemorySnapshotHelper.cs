@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -5,9 +6,9 @@ using BackgroundOnce.EFCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 using TechTalk.SpecFlow;
 
-namespace BackgroundOnce.EFCore
+namespace BackgroundOnce.EFCore.InMemory
 {
-    public class InMemorySnapshotHelper : IInMemorySnapshotHelper
+    public class InMemorySnapshotHelper : ISnapshotHelper
     {
         private readonly IInMemorySnapshotTableFactory _inMemorySnapshotTableFactory;
 
@@ -18,6 +19,11 @@ namespace BackgroundOnce.EFCore
 
         public Task CreateSnapshot(DbContext dbContext, FeatureContext featureContext)
         {
+            if (SnapshotExists(dbContext, featureContext))
+            {
+                throw new InvalidOperationException("Snapshot has already been created, it might be intentional to replace the snapshot, but it's not expected");
+            }
+
             var data = dbContext.Database.GetData();
             var dataSnapshot = data.ToDictionary(
                 pair => pair.Key,
@@ -30,6 +36,11 @@ namespace BackgroundOnce.EFCore
 
         public Task RestoreSnapshot(DbContext dbContext, FeatureContext featureContext)
         {
+            if (!SnapshotExists(dbContext, featureContext))
+            {
+                throw new InvalidOperationException("Snapshot hasn't been created, yet");
+            }
+
             var snapshot = (Snapshot)featureContext[Snapshot.SnapshotKey];
 
             var data = dbContext.Database.GetData();

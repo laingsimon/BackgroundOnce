@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using BackgroundOnce.UnitTestCommon.Data;
 using BackgroundOnce.UnitTestCommon.Repository;
@@ -31,9 +32,9 @@ namespace BackgroundOnce.UnitTestCommon
         public ICollection<Person> People => Get<Person>();
         public ICollection<Address> Addresses => Get<Address>();
         public ICollection<Department> Departments => Get<Department>();
-        public Task SaveChangesAsync()
+        public Task<int> SaveChangesAsync(CancellationToken token = default)
         {
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         public ICollection<T> Get<T>() where T : class

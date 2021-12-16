@@ -3,7 +3,7 @@ using System.Linq;
 using BackgroundOnce.EFCore.Extensions;
 using Microsoft.EntityFrameworkCore.InMemory.Storage.Internal;
 
-namespace BackgroundOnce.EFCore
+namespace BackgroundOnce.EFCore.InMemory
 {
     internal class InMemorySnapshotTableFactory : IInMemorySnapshotTableFactory
     {

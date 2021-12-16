@@ -4,7 +4,7 @@ using TechTalk.SpecFlow;
 
 namespace BackgroundOnce.EFCore
 {
-    public interface IInMemorySnapshotHelper
+    public interface ISnapshotHelper
     {
         Task CreateSnapshot(DbContext dbContext, FeatureContext featureContext);
         Task RestoreSnapshot(DbContext dbContext, FeatureContext featureContext);

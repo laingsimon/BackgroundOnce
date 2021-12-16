@@ -1,3 +1,4 @@
+using BackgroundOnce.EFCore.InMemory;
 using BackgroundOnce.EFCore.Plugin;
 using TechTalk.SpecFlow.Plugins;
 using TechTalk.SpecFlow.UnitTestProvider;
@@ -18,7 +19,7 @@ namespace BackgroundOnce.EFCore.Plugin
 
         private void RuntimePluginEventsOnCustomizeGlobalDependencies(object sender, CustomizeGlobalDependenciesEventArgs e)
         {
-            e.ObjectContainer.RegisterTypeAs<IInMemorySnapshotHelper>(typeof(InMemorySnapshotHelper));
+            e.ObjectContainer.RegisterTypeAs<ISnapshotHelper>(typeof(InMemorySnapshotHelper));
             e.ObjectContainer.RegisterTypeAs<IInMemorySnapshotTableFactory>(typeof(InMemorySnapshotTableFactory));
         }
     }

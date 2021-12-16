@@ -18,8 +18,5 @@ namespace BackgroundOnce.UnitTestCommon.Repository
             where T : class;
         IEnumerable<T> Get<T>()
             where T : class;
-        Task CreateSnapshot(FeatureContext featureContext);
-        Task RestoreSnapshot(FeatureContext featureContext);
-        bool SnapshotExists(FeatureContext featureContext);
     }
 }
