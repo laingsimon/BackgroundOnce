@@ -2,8 +2,16 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <IsPackable>true</IsPackable>
         <AssemblyName>BackgroundOnce.EFCore.SpecFlowPlugin</AssemblyName>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>BackgroundOnce.EFCore</PackageId>
+        <Title>BackgroundOnce.EFCore</Title>
+        <Authors>Simon Laing</Authors>
+        <PackageProjectUrl>https://github.com/laingsimon/BackgroundOnce/</PackageProjectUrl>
+        <PackageLicense>https://github.com/laingsimon/BackgroundOnce/blob/main/LICENSE</PackageLicense>
+        <RepositoryUrl>https://github.com/laingsimon/BackgroundOnce/</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

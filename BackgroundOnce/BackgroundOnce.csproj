@@ -2,13 +2,19 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <AssemblyName>BackgroundOnce.SpecFlowPlugin</AssemblyName>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>BackgroundOnce</PackageId>
+        <Title>BackgroundOnce</Title>
+        <Authors>Simon Laing</Authors>
+        <PackageProjectUrl>https://github.com/laingsimon/BackgroundOnce/</PackageProjectUrl>
+        <PackageLicense>https://github.com/laingsimon/BackgroundOnce/blob/main/LICENSE</PackageLicense>
+        <RepositoryUrl>https://github.com/laingsimon/BackgroundOnce/</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
         <PackageReference Include="SpecFlow" Version="3.9.40" />
     </ItemGroup>
 
