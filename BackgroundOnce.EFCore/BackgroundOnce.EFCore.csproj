@@ -10,8 +10,9 @@
         <Title>BackgroundOnce.EFCore</Title>
         <Authors>Simon Laing</Authors>
         <PackageProjectUrl>https://github.com/laingsimon/BackgroundOnce/</PackageProjectUrl>
-        <PackageLicense>https://github.com/laingsimon/BackgroundOnce/blob/main/LICENSE</PackageLicense>
         <RepositoryUrl>https://github.com/laingsimon/BackgroundOnce/</RepositoryUrl>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageReadmeFile>NUGET.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,11 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <UpToDateCheckInput Remove="Features\InMemory.feature" />
+        <None Include="..\NUGET.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
-
-    <ItemGroup>
-      <UpToDateCheckBuild Remove="Features\InMemory.feature.cs" />
-    </ItemGroup>
-
 </Project>

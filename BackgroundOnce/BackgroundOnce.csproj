@@ -10,12 +10,17 @@
         <Title>BackgroundOnce</Title>
         <Authors>Simon Laing</Authors>
         <PackageProjectUrl>https://github.com/laingsimon/BackgroundOnce/</PackageProjectUrl>
-        <PackageLicense>https://github.com/laingsimon/BackgroundOnce/blob/main/LICENSE</PackageLicense>
         <RepositoryUrl>https://github.com/laingsimon/BackgroundOnce/</RepositoryUrl>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageReadmeFile>NUGET.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="SpecFlow" Version="3.9.40" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\NUGET.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
 </Project>
