@@ -42,3 +42,6 @@ jobs:
         name: "Nuget packages (${{env.MAJOR_VERSION}}.${{env.MINOR_VERSION}}.${{github.run_number}}${{env.PRE_RELEASE_TAG}})"
         path: Packages/*.nupkg
         retention-days: 5
+    - name: Push with dotnet
+      if: ${{ github.ref_name == 'main' }}
+      run: dotnet nuget push Packages/*.nupkg --api-key ${{ secrets.NUGETAPIKEY }} --source https://api.nuget.org/v3/index.json
