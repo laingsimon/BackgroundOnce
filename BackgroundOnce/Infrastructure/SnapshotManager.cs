@@ -45,5 +45,16 @@ namespace BackgroundOnce.Infrastructure
         {
             return _featureContext.ContainsKey(BackgroundOnceSnapshotKey);
         }
+
+        public async Task ResetToInitial()
+        {
+            var scenarioContainer = _scenarioContext.ScenarioContainer;
+            var snapshotData = scenarioContainer.GetObjectPool().OfType<ISnapshotData>().ToArray();
+
+            foreach (var snapshotDataInstance in snapshotData)
+            {
+                await snapshotDataInstance.ResetToInitial().ConfigureAwait(false);
+            }
+        }
     }
 }

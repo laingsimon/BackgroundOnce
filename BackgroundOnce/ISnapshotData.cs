@@ -19,5 +19,11 @@ namespace BackgroundOnce
         /// </summary>
         /// <returns></returns>
         Task RestoreSnapshot();
+
+        /// <summary>
+        /// Restore the state of the datastore to its initial state, i.e. before any of the background steps have executed
+        /// </summary>
+        /// <returns></returns>
+        Task ResetToInitial();
     }
 }

@@ -64,5 +64,10 @@ namespace BackgroundOnce.UnitTestCommon.EfCore
         {
             await _snapshotHelper.RestoreSnapshot(this, featureContext);
         }
+
+        public async Task ResetToInitial(FeatureContext featureContext)
+        {
+            await _snapshotHelper.ResetToInitial(this, featureContext);
+        }
     }
 }

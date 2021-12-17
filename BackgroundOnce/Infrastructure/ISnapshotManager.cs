@@ -9,5 +9,7 @@ namespace BackgroundOnce.Infrastructure
         Task CreateSnapshots();
 
         bool SnapshotsExist();
+
+        Task ResetToInitial();
     }
 }

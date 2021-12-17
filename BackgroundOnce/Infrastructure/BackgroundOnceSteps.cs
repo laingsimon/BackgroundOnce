@@ -55,15 +55,24 @@ namespace BackgroundOnce.Infrastructure
             try
             {
                 _scenarioExecutor.InvokeSubScenario(scenarioName);
-
-                if (_scenarioContext.ScenarioExecutionStatus == ScenarioExecutionStatus.OK)
-                {
-                    await _snapshotManager.CreateSnapshots();
-                }
             }
             finally
             {
                 backgroundOnceExecutionPath.Pop();
+            }
+
+            if (_scenarioContext.ScenarioExecutionStatus == ScenarioExecutionStatus.OK && backgroundOnceExecutionPath.Count == 0)
+            {
+                await _snapshotManager.CreateSnapshots();
+
+                if (scenarioName == _scenarioContext.ScenarioInfo.Title)
+                {
+                    /* special case for when the background is invoked directly.
+                       in this case the background calls the scenario, then the scenario executes itself.
+                       if the data isn't reset then the subsequent steps in the scenario could cause duplication of data
+                     */
+                    await _snapshotManager.ResetToInitial();
+                }
             }
         }
     }

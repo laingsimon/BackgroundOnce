@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BackgroundOnce.EFCore.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using TechTalk.SpecFlow;
 
 namespace BackgroundOnce.EFCore.InMemory
@@ -19,7 +21,7 @@ namespace BackgroundOnce.EFCore.InMemory
 
         public Task CreateSnapshot(DbContext dbContext, FeatureContext featureContext)
         {
-            if (SnapshotExists(dbContext, featureContext))
+            if (SnapshotExists(featureContext))
             {
                 throw new InvalidOperationException("Snapshot has already been created, it might be intentional to replace the snapshot, but it's not expected");
             }
@@ -36,7 +38,7 @@ namespace BackgroundOnce.EFCore.InMemory
 
         public Task RestoreSnapshot(DbContext dbContext, FeatureContext featureContext)
         {
-            if (!SnapshotExists(dbContext, featureContext))
+            if (!SnapshotExists(featureContext))
             {
                 throw new InvalidOperationException("Snapshot hasn't been created, yet");
             }
@@ -65,11 +67,42 @@ namespace BackgroundOnce.EFCore.InMemory
                 tableSnapshot.Replace(tableData);
             }
 
+            var missingTables = snapshot.DataSnapshot.Keys.Except(data.Keys);
+            foreach (var missingTable in missingTables)
+            {
+                var tableSnapshotData = snapshot.DataSnapshot[missingTable];
+#pragma warning disable EF1001
+                var table = tableSnapshotData.GetTable();
+#pragma warning restore EF1001
+                data.Add(missingTable, table);
+            }
+
             dbContext.ChangeTracker.AcceptAllChanges();
             return Task.CompletedTask;
         }
 
-        public bool SnapshotExists(DbContext dbContext, FeatureContext featureContext)
+        public Task ResetToInitial(DbContext dbContext, FeatureContext featureContext)
+        {
+            var data = dbContext.Database.GetData();
+
+            foreach (var pair in data.ToArray())
+            {
+                var tableKey = pair.Key;
+                data.Remove(tableKey);
+            }
+
+            dbContext.ChangeTracker.AcceptAllChanges();
+
+            var databaseFacade = (IInfrastructure<IServiceProvider>)dbContext.Database;
+#pragma warning disable EF1001
+            var stateManager = (IStateManager)databaseFacade.Instance.GetService(typeof(IStateManager));
+            stateManager!.Clear();
+#pragma warning restore EF1001
+
+            return Task.CompletedTask;
+        }
+
+        private static bool SnapshotExists(FeatureContext featureContext)
         {
             return featureContext.ContainsKey(Snapshot.SnapshotKey);
         }

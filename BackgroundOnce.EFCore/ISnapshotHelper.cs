@@ -8,6 +8,6 @@ namespace BackgroundOnce.EFCore
     {
         Task CreateSnapshot(DbContext dbContext, FeatureContext featureContext);
         Task RestoreSnapshot(DbContext dbContext, FeatureContext featureContext);
-        bool SnapshotExists(DbContext dbContext, FeatureContext featureContext);
+        Task ResetToInitial(DbContext dbContext, FeatureContext featureContext);
     }
 }

@@ -6,6 +6,7 @@ namespace BackgroundOnce.EFCore.InMemory
     {
 #pragma warning disable EF1001
         void Replace(IInMemoryTable table);
+        IInMemoryTable GetTable();
 #pragma warning restore EF1001
     }
 }

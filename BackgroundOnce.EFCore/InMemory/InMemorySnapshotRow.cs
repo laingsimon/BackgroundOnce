@@ -4,18 +4,19 @@ namespace BackgroundOnce.EFCore.InMemory
 {
     public class InMemorySnapshotRow : IInMemorySnapshotRow
     {
-        private readonly object _key;
         private readonly object[] _values;
 
         public InMemorySnapshotRow(object key, object[] values)
         {
-            _key = key;
+            Key = key;
             _values = values;
         }
 
+        public object Key { get; }
+
         public void AddTo(IDictionary rowDic)
         {
-            rowDic.Add(_key, _values);
+            rowDic.Add(Key, _values);
         }
     }
 }

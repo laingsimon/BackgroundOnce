@@ -20,5 +20,6 @@ namespace BackgroundOnce.UnitTestCommon.Repository
             where T : class;
         Task CreateSnapshot(FeatureContext featureContext);
         Task RestoreSnapshot(FeatureContext featureContext);
+        Task ResetToInitial(FeatureContext featureContext);
     }
 }

@@ -26,5 +26,10 @@ namespace BackgroundOnce.UnitTestCommon.Context
         {
             await _databaseFactory.GetDatabase(DatabaseType).RestoreSnapshot(_featureContext);
         }
+
+        public async Task ResetToInitial()
+        {
+            await _databaseFactory.GetDatabase(DatabaseType).ResetToInitial(_featureContext);
+        }
     }
 }

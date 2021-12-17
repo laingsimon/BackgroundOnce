@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using BackgroundOnce.EFCore.Extensions;
@@ -8,10 +9,12 @@ namespace BackgroundOnce.EFCore.InMemory
     internal class InMemorySnapshotTable : IInMemorySnapshotTable
     {
         private readonly IReadOnlyCollection<IInMemorySnapshotRow> _rows;
+        private readonly Func<IInMemoryTable> _tableFactory;
 
-        public InMemorySnapshotTable(IReadOnlyCollection<IInMemorySnapshotRow> rows)
+        public InMemorySnapshotTable(IReadOnlyCollection<IInMemorySnapshotRow> rows, Func<IInMemoryTable> tableFactory)
         {
             _rows = rows;
+            _tableFactory = tableFactory;
         }
 
 #pragma warning disable EF1001
@@ -27,5 +30,20 @@ namespace BackgroundOnce.EFCore.InMemory
                 row.AddTo(tableRows);
             }
         }
+
+#pragma warning disable EF1001
+        public IInMemoryTable GetTable()
+        {
+            var table = _tableFactory();
+            var tableRows = table.NonPublicField<IDictionary>("_rows");
+
+            foreach (var row in _rows)
+            {
+                row.AddTo(tableRows);
+            }
+
+            return table;
+        }
+#pragma warning restore EF1001
     }
 }

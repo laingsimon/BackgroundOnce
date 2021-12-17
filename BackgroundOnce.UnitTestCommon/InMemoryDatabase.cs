@@ -77,9 +77,10 @@ namespace BackgroundOnce.UnitTestCommon
             return Task.CompletedTask;
         }
 
-        public bool SnapshotExists(FeatureContext featureContext)
+        public Task ResetToInitial(FeatureContext featureContext)
         {
-            return featureContext.ContainsKey(SnapshotKey);
+            ResetDataTo(new InMemoryDatabase());
+            return Task.CompletedTask;
         }
 
         public override string ToString()
