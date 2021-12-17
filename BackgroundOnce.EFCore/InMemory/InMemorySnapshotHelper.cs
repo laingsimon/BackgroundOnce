@@ -36,7 +36,7 @@ namespace BackgroundOnce.EFCore.InMemory
             return Task.CompletedTask;
         }
 
-        public Task RestoreSnapshot(DbContext dbContext, FeatureContext featureContext)
+        public async Task RestoreSnapshot(DbContext dbContext, FeatureContext featureContext)
         {
             if (!SnapshotExists(featureContext))
             {
@@ -44,16 +44,10 @@ namespace BackgroundOnce.EFCore.InMemory
             }
 
             var snapshot = (Snapshot)featureContext[Snapshot.SnapshotKey];
-
             var data = dbContext.Database.GetData();
 
-            foreach (var pair in data.ToArray())
+            Task RestoreTableSnapshot(object tableKey)
             {
-                var tableKey = pair.Key;
-#pragma warning disable EF1001
-                var tableData = pair.Value;
-#pragma warning restore EF1001
-
                 var tableSnapshot = snapshot.DataSnapshot.ContainsKey(tableKey)
                     ? snapshot.DataSnapshot[tableKey]
                     : null;
@@ -61,24 +55,27 @@ namespace BackgroundOnce.EFCore.InMemory
                 if (tableSnapshot == null)
                 {
                     data.Remove(tableKey);
-                    continue;
+                    return Task.CompletedTask;
+                }
+
+#pragma warning disable EF1001
+                var tableData = data.ContainsKey(tableKey)
+                    ? data[tableKey]
+                    : null;
+
+                if (tableData == null)
+                {
+                    var table = tableSnapshot.GetTable();
+                    data.Add(tableKey, table);
                 }
 
                 tableSnapshot.Replace(tableData);
-            }
-
-            var missingTables = snapshot.DataSnapshot.Keys.Except(data.Keys);
-            foreach (var missingTable in missingTables)
-            {
-                var tableSnapshotData = snapshot.DataSnapshot[missingTable];
-#pragma warning disable EF1001
-                var table = tableSnapshotData.GetTable();
+                return Task.CompletedTask;
 #pragma warning restore EF1001
-                data.Add(missingTable, table);
             }
 
+            await Task.WhenAll(data.Keys.Select(RestoreTableSnapshot));
             dbContext.ChangeTracker.AcceptAllChanges();
-            return Task.CompletedTask;
         }
 
         public Task ResetToInitial(DbContext dbContext, FeatureContext featureContext)

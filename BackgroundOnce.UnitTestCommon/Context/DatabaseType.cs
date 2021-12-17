@@ -4,5 +4,6 @@ namespace BackgroundOnce.UnitTestCommon.Context
     {
         InMemoryDatabase,
         EfCoreInMemory,
+        EfCoreSqlite,
     }
 }

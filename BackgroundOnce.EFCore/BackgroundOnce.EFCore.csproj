@@ -17,6 +17,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.12" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.12" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.12" />
       <PackageReference Include="SpecFlow" Version="3.9.40" />
     </ItemGroup>
 

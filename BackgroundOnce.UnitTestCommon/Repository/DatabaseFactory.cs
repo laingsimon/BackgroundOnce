@@ -36,6 +36,8 @@ namespace BackgroundOnce.UnitTestCommon.Repository
                     return new InMemoryDatabase();
                 case DatabaseType.EfCoreInMemory:
                     return _dbContextFactory.CreateInMemoryDbContext();
+                case DatabaseType.EfCoreSqlite:
+                    return _dbContextFactory.CreateSqliteDbContext();
                 default:
                     throw new NotSupportedException($"Unsupported database type: {databaseType}");
             }
