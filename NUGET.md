@@ -1,4 +1,4 @@
-# 'BackgroundOnce'
+# BackgroundOnce
 
 Support once-only execution of [Specflow](https://specflow.org/) steps in the `Background`, similar to [Nunit OneTimeSetup](https://docs.nunit.org/articles/nunit/writing-tests/attributes/onetimesetup.html).
 

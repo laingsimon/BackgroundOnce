@@ -1,4 +1,4 @@
-# 'BackgroundOnce'
+# BackgroundOnce
 
 [Specflow](https://specflow.org/) and [Gherkin](https://cucumber.io/docs/gherkin/) allow you to specify a [`Background`](https://cucumber.io/docs/gherkin/reference/#background), a series of steps that execute before every scenario.
 But what if you this can be executed once, and remain valid for all scenarios, much like the [Nunit OneTimeSetup](https://docs.nunit.org/articles/nunit/writing-tests/attributes/onetimesetup.html) approach.
@@ -8,7 +8,7 @@ This doesn't undermine any of the Gherkin spec, nor the way in which Specflow im
 This project explores such an approach. For now this project is purely experimental and has received no approval nor any affiliation with [Specflow](https://specflow.org/) or [Cucumber/Gherkin](https://cucumber.io/).
 
 ### Example
-Imagine you specify [the following scenarios](Specflow.BackgroundOnce.Nunit/Features/Readme.feature)
+Imagine you specify [the following scenarios](BackgroundOnce.Nunit/Features/Readme.feature)
 
 ```gherkin
 Background:
@@ -98,7 +98,7 @@ public class DataContext : ISnapshotData
 }
 ```
 There can be any number of these 'context' objects, any which are created within the invoked scenario will have their methods invoked at the appropriate times.
-See [the sample projects in this repository](Specflow.BackgroundOnce.UnitTestCommon/Context/DataContext.cs) for some examples of how this can be implemented.
+See [the sample projects in this repository](BackgroundOnce.UnitTestCommon/Context/DataContext.cs) for some examples of how this can be implemented.
 
 #### Notes on the implementation:
 - **Don't use static objects/fields** not only are they not thread safe but they circumvent dependency injection and encapsulation of snapshots within features
