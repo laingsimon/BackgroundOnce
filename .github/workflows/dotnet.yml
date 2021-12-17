@@ -34,15 +34,11 @@ jobs:
       run: dotnet build --no-restore --configuration Release "-p:Version=$MAJOR_VERSION.$MINOR_VERSION.$GITHUB_RUN_NUMBER$PRE_RELEASE_TAG"
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
-    - name: 'Upload BackgroundOnce package'
+    - name: Copy packages
+      run: mkdir Packages; cp BackgroundOnce/bin/Release/*.nupkg Packages; cp BackgroundOnce.EFCore/bin/Release/*.nupkg Packages;
+    - name: Upload Nuget packages
       uses: actions/upload-artifact@v2
       with:
-        name: "BackgroundOnce-${{env.MAJOR_VERSION}}.${{env.MINOR_VERSION}}.${{github.run_number}}${{env.PRE_RELEASE_TAG}}.nupkg"
-        path: BackgroundOnce/bin/Release/BackgroundOnce*.nupkg
-        retention-days: 5
-    - name: 'Upload BackgroundOnce.EFCore package'
-      uses: actions/upload-artifact@v2
-      with:
-        name: "BackgroundOnceEFCore-${{env.MAJOR_VERSION}}.${{env.MINOR_VERSION}}.${{github.run_number}}${{env.PRE_RELEASE_TAG}}.nupkg"
-        path: BackgroundOnce.EFCore/bin/Release/BackgroundOnce.EFCore*.nupkg
+        name: "Nuget packages (${{env.MAJOR_VERSION}}.${{env.MINOR_VERSION}}.${{github.run_number}}${{env.PRE_RELEASE_TAG}})"
+        path: Packages/*.nupkg
         retention-days: 5
