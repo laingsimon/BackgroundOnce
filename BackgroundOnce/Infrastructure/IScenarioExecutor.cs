@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
+
 namespace BackgroundOnce.Infrastructure
 {
     internal interface IScenarioExecutor
     {
-        void InvokeSubScenario(string scenarioName);
+        Task InvokeSubScenario(string scenarioName);
     }
 }

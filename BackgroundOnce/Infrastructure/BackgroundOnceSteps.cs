@@ -54,7 +54,7 @@ namespace BackgroundOnce.Infrastructure
 
             try
             {
-                _scenarioExecutor.InvokeSubScenario(scenarioName);
+                await _scenarioExecutor.InvokeSubScenario(scenarioName);
             }
             finally
             {
