@@ -13,13 +13,14 @@
         <RepositoryUrl>https://github.com/laingsimon/BackgroundOnce/</RepositoryUrl>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageReadmeFile>NUGET.md</PackageReadmeFile>
+        <PackageVersion>4.0.16-beta</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.12" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.12" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.12" />
-      <PackageReference Include="SpecFlow" Version="3.9.40" />
+      <PackageReference Include="SpecFlow" Version="4.0.16-beta" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,6 +28,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\NUGET.md" Pack="true" PackagePath="\"/>
+        <None Include="..\NUGET.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 </Project>

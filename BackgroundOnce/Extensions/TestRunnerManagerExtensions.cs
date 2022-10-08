@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,35 +9,35 @@ namespace BackgroundOnce.Extensions
 {
     internal static class TestRunnerManagerExtensions
     {
-        private static readonly FieldInfo TestRunnerRegistryField = typeof(TestRunnerManager).GetField("testRunnerRegistry", BindingFlags.Instance | BindingFlags.NonPublic);
-        private static readonly FieldInfo TestRunnerManagerRegistryField = typeof(TestRunnerManager).GetField("testRunnerManagerRegistry", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly FieldInfo TestRunnerRegistryField = typeof(TestRunnerManager).GetField("_testRunnerRegistry", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo TestRunnerManagerRegistryField = typeof(TestRunnerManager).GetField("_testRunnerManagerRegistry", BindingFlags.Static | BindingFlags.NonPublic);
 
-        public static ITestRunner GetTestRunnerWithoutCreating(this ITestRunnerManager manager, int threadId)
+        public static ITestRunner GetTestRunnerWithoutCreating(this ITestRunnerManager manager, string testWorkerId)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException(nameof(manager));
             }
 
-            var testRunnerRegistry = (Dictionary<int, ITestRunner>)TestRunnerRegistryField!.GetValue(manager);
+            var testRunnerRegistry = (ConcurrentDictionary<string, ITestRunner>)TestRunnerRegistryField!.GetValue(manager);
             if (testRunnerRegistry == null)
             {
                 throw new InvalidOperationException("Unable to retrieve test runner registry");
             }
 
-            return testRunnerRegistry.ContainsKey(threadId)
-                ? testRunnerRegistry[threadId]
+            return testRunnerRegistry.ContainsKey(testWorkerId)
+                ? testRunnerRegistry[testWorkerId]
                 : null;
         }
 
-        public static void ReplaceTestRunner(this ITestRunnerManager manager, int threadId, ITestRunner testRunner)
+        public static void ReplaceTestRunner(this ITestRunnerManager manager, string testWorkerId, ITestRunner testRunner)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException(nameof(manager));
             }
 
-            var testRunnerRegistry = (Dictionary<int, ITestRunner>)TestRunnerRegistryField!.GetValue(manager);
+            var testRunnerRegistry = (ConcurrentDictionary<string, ITestRunner>)TestRunnerRegistryField!.GetValue(manager);
             if (testRunnerRegistry == null)
             {
                 throw new InvalidOperationException("Unable to retrieve test runner registry");
@@ -44,15 +45,15 @@ namespace BackgroundOnce.Extensions
 
             if (testRunner == null)
             {
-                if (testRunnerRegistry.ContainsKey(threadId))
+                if (testRunnerRegistry.ContainsKey(testWorkerId))
                 {
-                    testRunnerRegistry.Remove(threadId);
+                    testRunnerRegistry.Remove(testWorkerId, out _);
                 }
 
                 return;
             }
 
-            testRunnerRegistry[threadId] = testRunner;
+            testRunnerRegistry[testWorkerId] = testRunner;
         }
 
         public static ITestRunnerManager GetTestRunnerManager(this ITestRunner testRunner)
@@ -62,7 +63,7 @@ namespace BackgroundOnce.Extensions
                 throw new ArgumentNullException(nameof(testRunner));
             }
 
-            var testRunnerManagerRegistry = (Dictionary<Assembly, ITestRunnerManager>)TestRunnerManagerRegistryField!.GetValue(null);
+            var testRunnerManagerRegistry = (ConcurrentDictionary<Assembly, ITestRunnerManager>)TestRunnerManagerRegistryField!.GetValue(null);
 
             if (testRunnerManagerRegistry == null)
             {
@@ -75,8 +76,8 @@ namespace BackgroundOnce.Extensions
                 .Select(pair => pair.Value);
 
             return (from assemblyScopedTestRunner in nonPluginAssemblies
-                let testRunnerRegistry = (Dictionary<int, ITestRunner>)TestRunnerRegistryField.GetValue(assemblyScopedTestRunner)
-                where testRunnerRegistry != null && testRunnerRegistry.ContainsValue(testRunner)
+                let testRunnerRegistry = (ConcurrentDictionary<string, ITestRunner>)TestRunnerRegistryField.GetValue(assemblyScopedTestRunner)
+                where testRunnerRegistry != null && testRunnerRegistry.Values.Contains(testRunner)
                 select assemblyScopedTestRunner).FirstOrDefault();
         }
     }

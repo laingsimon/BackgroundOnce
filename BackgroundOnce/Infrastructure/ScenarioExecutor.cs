@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BackgroundOnce.Extensions;
 using BoDi;
 using TechTalk.SpecFlow;
@@ -16,7 +17,7 @@ namespace BackgroundOnce.Infrastructure
         private readonly IScenarioNameResolver _scenarioNameResolver;
         private readonly FeatureContext _featureContext;
         private readonly ITestRunner _testRunner;
-        private readonly int _threadId;
+        private readonly string _testWorkerId;
 
         public ScenarioExecutor(
             ScenarioContext scenarioContext,
@@ -30,12 +31,10 @@ namespace BackgroundOnce.Infrastructure
             _scenarioNameResolver = scenarioNameResolver;
             _featureContext = featureContext;
             _testRunner = testRunner;
-            _threadId = testRunner.ThreadId != 0
-                ? testRunner.ThreadId
-                : TestRunnerManager.GetTestRunner().ThreadId;
+            _testWorkerId = testRunner.TestWorkerId ?? TestRunnerManager.TestRunStartWorkerId;
         }
 
-        public void InvokeSubScenario(string scenarioName)
+        public async Task InvokeSubScenario(string scenarioName)
         {
             var recordingResult = RecordSteps(scenarioName);
 
@@ -47,7 +46,7 @@ namespace BackgroundOnce.Infrastructure
                     continue;
                 }
 
-                step.Invoke(_testRunner);
+                await step.Invoke(_testRunner);
             }
 
             LiftObjectsCreatedInSubScenarioToFeatureContainer(recordingResult.ObjectContainer);
@@ -72,18 +71,18 @@ namespace BackgroundOnce.Infrastructure
                 ScenarioContext = scenarioContextWithSelectivelyRegisteringContainer,
             };
             var recordingRunner = new TestRunner(recordingEngine);
-            recordingRunner.InitializeTestRunner(_threadId);
+            recordingRunner.InitializeTestRunner(_testWorkerId);
 
             // replace the test runner
             var manager = _testRunner.GetTestRunnerManager();
 
             if (manager == null)
             {
-                throw new InvalidOperationException($"Unable to find TestRunnerManager for TestRunner with thread id {_testRunner.ThreadId}");
+                throw new InvalidOperationException($"Unable to find TestRunnerManager for TestRunner with thread id {_testRunner.TestWorkerId}");
             }
 
-            var originalTestRunner = manager.GetTestRunnerWithoutCreating(_threadId);
-            manager.ReplaceTestRunner(_threadId, recordingRunner);
+            var originalTestRunner = manager.GetTestRunnerWithoutCreating(_testWorkerId);
+            manager.ReplaceTestRunner(_testWorkerId, recordingRunner);
 
             var subFeature = _featureFactory.CreateFeatureInstance(
                 _scenarioNameResolver,
@@ -95,7 +94,7 @@ namespace BackgroundOnce.Infrastructure
             subFeature.Dispose();
 
             // restore the test runner
-            manager.ReplaceTestRunner(_threadId, originalTestRunner);
+            manager.ReplaceTestRunner(_testWorkerId, originalTestRunner);
 
             return new RecordingResult
             {
@@ -202,61 +201,72 @@ namespace BackgroundOnce.Infrastructure
         {
             public List<RecordedStep> Steps { get; } = new List<RecordedStep>();
 
-            public void Step(StepDefinitionKeyword stepDefinitionKeyword, string keyword, string text, string multilineTextArg, Table tableArg)
+            public Task StepAsync(StepDefinitionKeyword stepDefinitionKeyword, string keyword, string text, string multilineTextArg,
+                Table tableArg)
             {
                 switch (stepDefinitionKeyword)
                 {
                     case StepDefinitionKeyword.And:
-                        Steps.Add(new RecordedStep(runner => runner.And(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
+                        Steps.Add(new RecordedStep(runner => runner.AndAsync(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
                         break;
                     case StepDefinitionKeyword.But:
-                        Steps.Add(new RecordedStep(runner => runner.But(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
+                        Steps.Add(new RecordedStep(runner => runner.ButAsync(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
                         break;
                     case StepDefinitionKeyword.Given:
-                        Steps.Add(new RecordedStep(runner => runner.Given(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
+                        Steps.Add(new RecordedStep(runner => runner.GivenAsync(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
                         break;
                     case StepDefinitionKeyword.When:
-                        Steps.Add(new RecordedStep(runner => runner.When(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
+                        Steps.Add(new RecordedStep(runner => runner.WhenAsync(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
                         break;
                     case StepDefinitionKeyword.Then:
-                        Steps.Add(new RecordedStep(runner => runner.Then(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
+                        Steps.Add(new RecordedStep(runner => runner.ThenAsync(text, multilineTextArg, tableArg, keyword), stepDefinitionKeyword, text));
                         break;
                     default:
                         throw new NotSupportedException($"Gherkin keyword {stepDefinitionKeyword} isn't supported");
                 }
+
+                return Task.CompletedTask;
             }
 
             #region empty members
-            public void OnTestRunStart()
+
+            public Task OnTestRunStartAsync()
             {
+                return Task.CompletedTask;
             }
 
-            public void OnTestRunEnd()
+            public Task OnTestRunEndAsync()
             {
+                return Task.CompletedTask;
             }
 
-            public void OnFeatureStart(FeatureInfo featureInfo)
+            public Task OnFeatureStartAsync(FeatureInfo featureInfo)
             {
+                return Task.CompletedTask;
             }
 
-            public void OnFeatureEnd()
+            public Task OnFeatureEndAsync()
             {
+                return Task.CompletedTask;
             }
 
             public void OnScenarioInitialize(ScenarioInfo scenarioInfo)
             {
             }
 
-            public void OnScenarioStart()
+            public Task OnScenarioStartAsync()
             {
+                return Task.CompletedTask;
             }
 
-            public void OnAfterLastStep()
+            public Task OnAfterLastStepAsync()
             {
+                return Task.CompletedTask;
             }
 
-            public void OnScenarioEnd()
+            public Task OnScenarioEndAsync()
             {
+                return Task.CompletedTask;
             }
 
             public void OnScenarioSkipped()
@@ -274,9 +284,9 @@ namespace BackgroundOnce.Infrastructure
 
         private class RecordedStep
         {
-            private readonly Action<ITestRunner> _action;
+            private readonly Func<ITestRunner, Task> _action;
 
-            public RecordedStep(Action<ITestRunner> action, StepDefinitionKeyword keyword, string text)
+            public RecordedStep(Func<ITestRunner, Task> action, StepDefinitionKeyword keyword, string text)
             {
                 Keyword = keyword;
                 Text = text;
@@ -287,9 +297,9 @@ namespace BackgroundOnce.Infrastructure
 
             public string Text { get; }
 
-            public void Invoke(ITestRunner testRunner)
+            public async Task Invoke(ITestRunner testRunner)
             {
-                _action(testRunner);
+                await _action(testRunner);
             }
         }
     }

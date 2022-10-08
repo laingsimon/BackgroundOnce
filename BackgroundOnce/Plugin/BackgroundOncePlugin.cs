@@ -75,12 +75,15 @@ namespace BackgroundOnce.Plugin
             {
                 var attribute = method.GetCustomAttribute<TAttribute>();
 
-                var stepBinding = bindingFactory.CreateStepBinding(
+                var stepBindings = bindingFactory.CreateStepDefinitionBindingBuilder(
                     stepDefinitionType,
-                    attribute!.Regex,
                     new RuntimeBindingMethod(method),
-                    null);
-                bindingRegistry.RegisterStepDefinitionBinding(stepBinding);
+                    null,
+                    attribute!.Regex).Build();
+                foreach (var stepBinding in stepBindings)
+                {
+                    bindingRegistry.RegisterStepDefinitionBinding(stepBinding);
+                }
             }
         }
 
