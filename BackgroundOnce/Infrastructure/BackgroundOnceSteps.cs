@@ -8,8 +8,8 @@ namespace BackgroundOnce.Infrastructure
     [Binding]
     internal class BackgroundOnceSteps
     {
-        private const string GivenRegexAsync = @"^I invoke the (.+) scenario only once$";
-        private const string GivenRegexSync = @"^I invoke the (.+) scenario only once SYNC$";
+        private const string GivenRegexAsync = @"I invoke the (.+) scenario only once";
+        private const string GivenRegexSync = @"I synchronously invoke the (.+) scenario only once";
         private const string BackgroundOnceExecutionPathKey = nameof(BackgroundOnceExecutionPathKey);
 
         private readonly IScenarioExecutor _scenarioExecutor;
