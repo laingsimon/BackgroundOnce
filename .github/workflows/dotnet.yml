@@ -19,8 +19,7 @@ jobs:
 
     - name: Extract branch name
       shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF##*/})"
-      id: extract_branch
+      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
 
     - name: Set pre-release tag for main branch
       if: ${{ github.ref_name == 'main' }}
@@ -28,7 +27,7 @@ jobs:
 
     - name: Set pre-release tag for feature branches
       if: ${{ github.ref_name != 'main' }}
-      run: echo "PRE_RELEASE_TAG=-${{ steps.extract_branch.outputs.branch }}" >> $GITHUB_ENV
+      run: echo "PRE_RELEASE_TAG=-$BRANCH_NAME" >> $GITHUB_ENV
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
