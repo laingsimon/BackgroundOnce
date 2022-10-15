@@ -40,7 +40,8 @@ namespace BackgroundOnce.Infrastructure
 
             foreach (var step in recordingResult.Steps)
             {
-                if (BackgroundOnceSteps.MatchesStep(scenarioName, step.Text, step.Keyword))
+                if (BackgroundOnceSteps.MatchesStepAsync(scenarioName, step.Text, step.Keyword)
+                 || BackgroundOnceSteps.MatchesStepSync(scenarioName, step.Text, step.Keyword))
                 {
                     // prevent a recursive loop of Scenario, invokes Background, invokes Scenario, invokes Background, ...
                     continue;

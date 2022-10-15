@@ -8,7 +8,8 @@ namespace BackgroundOnce.Infrastructure
     [Binding]
     internal class BackgroundOnceSteps
     {
-        private const string GivenRegex = @"I invoke the (.+) scenario only once";
+        private const string GivenRegexAsync = @"^I invoke the (.+) scenario only once$";
+        private const string GivenRegexSync = @"^I invoke the (.+) scenario only once SYNC$";
         private const string BackgroundOnceExecutionPathKey = nameof(BackgroundOnceExecutionPathKey);
 
         private readonly IScenarioExecutor _scenarioExecutor;
@@ -25,14 +26,26 @@ namespace BackgroundOnce.Infrastructure
             _snapshotManager = snapshotManager;
         }
 
-        public static bool MatchesStep(string scenarioName, string stepText, StepDefinitionKeyword keyword)
+        public static bool MatchesStepAsync(string scenarioName, string stepText, StepDefinitionKeyword keyword)
         {
-            var matchingText = GivenRegex.Replace("(.+)", scenarioName);
+            var matchingText = GivenRegexAsync.Replace("(.+)", scenarioName);
             return matchingText == stepText && (keyword == StepDefinitionKeyword.Given || keyword == StepDefinitionKeyword.And);
         }
 
-        [Given(GivenRegex)]
-        public async Task GivenIInvokeTheScenarioWithName(string scenarioName)
+        public static bool MatchesStepSync(string scenarioName, string stepText, StepDefinitionKeyword keyword)
+        {
+            var matchingText = GivenRegexSync.Replace("(.+)", scenarioName);
+            return matchingText == stepText && (keyword == StepDefinitionKeyword.Given || keyword == StepDefinitionKeyword.And);
+        }
+
+        [Given(GivenRegexSync)]
+        public void GivenIInvokeTheScenarioWithNameSync(string scenarioName)
+        {
+            GivenIInvokeTheScenarioWithNameAsync(scenarioName).Wait();
+        }
+
+        [Given(GivenRegexAsync)]
+        public async Task GivenIInvokeTheScenarioWithNameAsync(string scenarioName)
         {
             if (_snapshotManager.SnapshotsExist())
             {
