@@ -13,6 +13,7 @@ jobs:
     env:
       MAJOR_VERSION: 4
       MINOR_VERSION: 0
+      PRE_RELEASE_TAG_PREFIX: -beta
 
     steps:
     - uses: actions/checkout@v2
@@ -23,11 +24,11 @@ jobs:
 
     - name: Set pre-release tag for main branch
       if: ${{ github.ref_name == 'main' }}
-      run: echo "PRE_RELEASE_TAG=" >> $GITHUB_ENV
+      run: echo "PRE_RELEASE_TAG=$PRE_RELEASE_TAG_PREFIX" >> $GITHUB_ENV
 
     - name: Set pre-release tag for feature branches
       if: ${{ github.ref_name != 'main' }}
-      run: echo "PRE_RELEASE_TAG=-$BRANCH_NAME" >> $GITHUB_ENV
+      run: echo "PRE_RELEASE_TAG=$PRE_RELEASE_TAG_PREFIX-$BRANCH_NAME" >> $GITHUB_ENV
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
